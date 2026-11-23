@@ -14,6 +14,6 @@ run screens screens
 run windows windows
 run shot shot --primary --dir evidence/out
 [ "$(uname -s)" = Linux ] && run shot-screen shot --screen "$(head -1 evidence/screens.txt | cut -f1)" --dir evidence/out
-[ "$(uname -s)" = Linux ] && run shot-window shot --title fs-capture-test --dir evidence/out
+[ "$(uname -s)" = Linux ] && run shot-window shot --window "$(grep XTerm evidence/windows.txt | head -1 | cut -f1)" --dir evidence/out
 run zip zip evidence/out.zip --dir evidence/out
 exit 0
