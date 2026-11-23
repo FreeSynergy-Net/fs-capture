@@ -15,7 +15,7 @@ default = ["xcap"]
 xcap = ["fs-capture/xcap"]
 
 [dependencies]
-fs-capture = { path = "../fs-capture", default-features = false }
+fs-capture = { path = "../fs-capture", version = "0.0.1", default-features = false }
 
 [dev-dependencies]
 tempfile = "3"
