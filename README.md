@@ -48,3 +48,10 @@ No network, no telemetry. Output goes only into the folder you name.
 ## Licence
 
 MIT OR Apache-2.0.
+
+## Command set `capture@0.1`
+
+`catalog/commands.json` describes the command set of this module (data only, no code): ids with
+namespace (`capture.shot`), version SemVer (major = a command is removed), access per command,
+and a help entry per command (en + de). Commands act only on the module's own contract and
+with the rights of the person.
