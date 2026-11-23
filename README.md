@@ -41,6 +41,11 @@ by GDI `PrintWindow`.
 
 Linux build needs development packages: wayland, pipewire, libspa, xcb, dbus, clang.
 
+## Manifest
+
+`module.toml` says what the package offers (command set `capture@0.1`, `catalog/commands.json`), what it needs and which form shows its
+data (`tiles@1`). Open and not decided here: the program name, the frontend binding and the channels of `tiles@1`; see `CHANGELOG.md`.
+
 ## Privacy
 
 No network, no telemetry. Output goes only into the folder you name.

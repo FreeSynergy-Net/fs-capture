@@ -1,0 +1,49 @@
+# Module manifest of fs-capture (description of what the package says about itself; no code).
+# Pattern: blueprint of fs-tasks (scaffold.toml, schema 2) and ENTSCHEID-form.md section 3/6.
+# Only what is decided is filled in. Open points are marked OPEN and are not decided here.
+schema = 2
+
+[module]
+name = "fs-capture"
+version = "0.0.1"
+kind = "standard"
+summary = { en = "Screenshots of screens and windows", de = "Bildschirm- und Fensteraufnahmen" }
+description = { en = "Takes screenshots of whole screens or single windows into a session folder, lists and deletes them, and bundles them as one ZIP. Windows and Linux.", de = "Macht Bildschirm- und Fensteraufnahmen in einen Sitzungsordner, listet und loescht sie und buendelt sie als ZIP. Windows und Linux." }
+license = "MIT OR Apache-2.0"
+
+# Offers (what the package provides). The capability names are the ones in the command set.
+[contract]
+version = "0.1"
+provides = ["capture.screens", "capture.windows", "capture.shot", "capture.list", "capture.delete", "capture.zip"]
+# id: OPEN (assigned with the contract registry).
+
+# Needs: the module itself needs no other module. The picture source is a trait (xcap adapter inside);
+# on Linux the window list needs an X11 session with a window manager (see README, "Limits").
+[needs]
+modules = []
+
+# Command set capture@0.1 (namespace id, version per command set; major = a command is removed).
+[commands]
+set = "capture@0.1"
+file = "catalog/commands.json"
+ids = ["capture.screens", "capture.windows", "capture.shot", "capture.list", "capture.delete", "capture.zip"]
+
+# Forms the data can be shown in (ENTSCHEID-form.md section 3 and 6, item 2). Only names, no expressions.
+# The session list (index.tsv) has the fields: nr, time_utc, kind, title, app, width, height, file.
+# The pictures are PNG files in the session folder. The form `tiles@1` (picture tiles; blocks tile-grid/file-tile)
+# is named in ENTSCHEID-form.md; its channels are OPEN until the form catalog (fs-interfaces) defines them,
+# so there is no `map` here. Do not invent channel names in this repository.
+[[form]]
+name = "tiles"
+version = "1"
+type = "Capture"
+shows = "capture list (one tile per screenshot: picture, title, time)"
+map = "OPEN (channels of tiles@1 not yet defined in the form catalog)"
+
+# Data package (ENTSCHEID-form.md section 6, item 3): one page with tiles@1, start through fs-starter.
+# The program name, the frontend binding and the start entry are OPEN (user questions 1 and 2 in ENTSCHEID-form.md).
+[data-package]
+page = "tiles@1 over the capture list"
+program-name = "OPEN"
+frontend = "OPEN"
+start = "OPEN (fs-starter)"
