@@ -102,3 +102,29 @@ impl From<std::io::Error> for CaptureError {
 
 /// Result alias of this crate.
 pub type Result<T> = std::result::Result<T, CaptureError>;
+
+/// Backend error of the window list. On Linux the usual cause is a session without an EWMH window
+/// manager or a pure Wayland session (windows are listed through X11); the message says so.
+#[cfg_attr(not(feature = "xcap"), allow(dead_code))]
+pub(crate) fn window_list_error(message: String) -> CaptureError {
+    let message = if message.contains("_NET_CLIENT_LIST") {
+        format!("{message} (no window manager that lists windows, or a pure Wayland session without X11)")
+    } else {
+        message
+    };
+    CaptureError::new(ErrorCode::Backend, message)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn window_list_hint_only_for_missing_window_manager() {
+        let e = window_list_error("_NET_CLIENT_LIST_STACKING not supported".into());
+        assert_eq!(e.code(), ErrorCode::Backend);
+        assert!(e.message().contains("no window manager"));
+        let e = window_list_error("connection refused".into());
+        assert_eq!(e.message(), "connection refused");
+    }
+}

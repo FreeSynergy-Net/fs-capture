@@ -1,6 +1,6 @@
 //! Adapter for the `xcap` crate (feature `xcap`). No xcap type leaves this file.
 
-use crate::error::{CaptureError, ErrorCode, Result};
+use crate::error::{window_list_error, CaptureError, ErrorCode, Result};
 use crate::image::Image;
 use crate::source::{CaptureSource, ScreenId, ScreenInfo, WindowId, WindowInfo};
 
@@ -60,7 +60,7 @@ impl CaptureSource for XcapSource {
 
     fn windows(&self) -> Result<Vec<WindowInfo>> {
         let mut out = Vec::new();
-        for w in xcap::Window::all().map_err(backend)? {
+        for w in xcap::Window::all().map_err(|e| window_list_error(e.to_string()))? {
             let Ok(id) = w.id() else { continue };
             out.push(WindowInfo {
                 id: WindowId(u64::from(id)),
