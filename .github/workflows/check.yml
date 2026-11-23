@@ -17,7 +17,25 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y pkg-config libclang-dev libwayland-dev libpipewire-0.3-dev libspa-0.2-dev libxcb1-dev libxcb-randr0-dev libdbus-1-dev libegl-dev libgbm-dev
+          sudo apt-get install -y pkg-config libclang-dev libwayland-dev libpipewire-0.3-dev libspa-0.2-dev libxcb1-dev libxcb-randr0-dev libdbus-1-dev libegl-dev libgbm-dev xvfb
       - run: cargo check --workspace --all-targets
       - run: cargo test --workspace --no-fail-fast
       - run: cargo clippy --workspace --all-targets -- -D warnings
+      - run: cargo build -p fs-capture-cli
+      - name: Run the real binary (capture attempt; the exact result is the finding)
+        continue-on-error: true
+        shell: bash
+        env:
+          RUN: ${{ runner.os == 'Linux' && 'xvfb-run -a target/debug/fs-capture' || 'target/debug/fs-capture' }}
+        run: |
+          mkdir -p evidence
+          $RUN screens > evidence/screens.txt 2>&1 && echo "exit=0" >> evidence/screens.txt || echo "exit=$?" >> evidence/screens.txt
+          $RUN windows > evidence/windows.txt 2>&1 && echo "exit=0" >> evidence/windows.txt || echo "exit=$?" >> evidence/windows.txt
+          $RUN shot --primary --dir evidence/out > evidence/shot.txt 2>&1 && echo "exit=0" >> evidence/shot.txt || echo "exit=$?" >> evidence/shot.txt
+          $RUN zip evidence/out.zip --dir evidence/out > evidence/zip.txt 2>&1 && echo "exit=0" >> evidence/zip.txt || echo "exit=$?" >> evidence/zip.txt
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: always()
+        with:
+          name: capture-evidence-${{ runner.os }}
+          path: evidence
+          if-no-files-found: warn
