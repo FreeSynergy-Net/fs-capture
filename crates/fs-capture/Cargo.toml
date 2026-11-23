@@ -1,0 +1,22 @@
+[package]
+name = "fs-capture"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+description = "Take screenshots of screens and windows into a session folder and bundle them as a ZIP. Built with help from Claude (AI)."
+readme = "../../README.md"
+keywords = ["screenshot", "capture", "zip"]
+categories = ["multimedia::images"]
+
+[features]
+default = ["xcap"]
+xcap = ["dep:xcap"]
+
+[dependencies]
+png = "=0.18.1"
+zip = { version = "=9.8.1", default-features = false, features = ["deflate"] }
+xcap = { version = "=0.9.10", optional = true }
+
+[dev-dependencies]
+tempfile = "3"
