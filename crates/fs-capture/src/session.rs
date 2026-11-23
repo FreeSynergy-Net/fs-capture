@@ -149,7 +149,20 @@ impl Session {
 
     fn write_index(&self) -> Result<()> {
         let tmp = self.dir.join(format!("{INDEX_FILE}.tmp"));
-        fs::write(&tmp, format_index(&self.entries))?;
+        // Never write through something that already sits under the temporary name (a symlink in a
+        // prepared folder): remove it (a link is removed, not its target), then create exclusively.
+        match fs::remove_file(&tmp) {
+            Ok(()) => {}
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => {}
+            Err(e) => return Err(e.into()),
+        }
+        let mut f = fs::OpenOptions::new()
+            .write(true)
+            .create_new(true)
+            .open(&tmp)?;
+        f.write_all(format_index(&self.entries).as_bytes())?;
+        f.sync_all()?;
+        drop(f);
         fs::rename(&tmp, self.dir.join(INDEX_FILE))?;
         Ok(())
     }

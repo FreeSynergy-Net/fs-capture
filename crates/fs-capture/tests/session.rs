@@ -232,3 +232,20 @@ fn read_only_folder_is_an_error_and_leaves_no_entry() {
         assert!(s.entries().is_empty());
     }
 }
+
+/// A symlink named like the temporary list must not lead the write out of the folder.
+#[cfg(unix)]
+#[test]
+fn index_tmp_symlink_is_not_followed() {
+    let d = tempfile::tempdir().unwrap();
+    let outside = tempfile::tempdir().unwrap();
+    let victim = outside.path().join("victim.txt");
+    fs::write(&victim, "keep").unwrap();
+    std::os::unix::fs::symlink(&victim, d.path().join(format!("{INDEX_FILE}.tmp"))).unwrap();
+    let src = FakeSource::standard();
+    let mut s = session(d.path());
+    s.add_screen(&src, src.primary_screen().unwrap().id)
+        .unwrap();
+    assert_eq!(fs::read_to_string(&victim).unwrap(), "keep");
+    assert_eq!(session(d.path()).entries().len(), 1);
+}
