@@ -63,9 +63,9 @@ impl Session {
         id: ScreenId,
         consent: FullScreenConsent,
     ) -> Result<Entry> {
-        consent.require()?;
+        let permit = consent.require()?;
         let info = source.screen_by_id(id)?;
-        let image = source.capture_screen(id)?;
+        let image = source.capture_screen(id, &permit)?;
         self.add_image(Kind::Screen, &info.name, "", &image)
     }
 

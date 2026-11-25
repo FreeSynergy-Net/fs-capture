@@ -1,5 +1,6 @@
 //! Adapter for the `xcap` crate (feature `xcap`). No xcap type leaves this file.
 
+use crate::consent::ScreenPermit;
 use crate::error::{window_list_error, CaptureError, ErrorCode, Result};
 use crate::image::Image;
 use crate::source::{CaptureSource, ScreenId, ScreenInfo, WindowId, WindowInfo};
@@ -74,7 +75,7 @@ impl CaptureSource for XcapSource {
         Ok(out)
     }
 
-    fn capture_screen(&self, id: ScreenId) -> Result<Image> {
+    fn capture_screen(&self, id: ScreenId, _permit: &ScreenPermit) -> Result<Image> {
         to_image(find_monitor(id)?.capture_image().map_err(backend)?)
     }
 

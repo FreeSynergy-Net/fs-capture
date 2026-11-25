@@ -66,7 +66,7 @@ OPTIONS:
   --dir <folder>   session folder (default: ./captures)
   --full-screen    confirm that a whole screen may be captured; without it `shot --primary` and
                    `shot --screen` are refused (E_FULL_SCREEN_NOT_CONFIRMED). Everything of all programs
-                   on that screen can be in the picture. Windows (`--window`, `--title`) need no flag.
+                   on that screen can be in the picture. Windows (`--window`, `--title`) need no flag; `--full-screen` with any other command is a usage error.
   -h, --help       show this help
 
 Errors are printed as `error[E_CODE]: message` on stderr; exit code 1 (2 = wrong usage).
@@ -101,6 +101,12 @@ pub fn parse(args: &[String]) -> Result<Invocation, String> {
         ["zip", file] => Command::Zip(PathBuf::from(file)),
         _ => return Err(format!("unknown or incomplete command: {}", rest.join(" "))),
     };
+    let whole_screen = matches!(command, Command::Shot(Target::Primary | Target::Screen(_)));
+    if full_screen == FullScreenConsent::Confirmed && !whole_screen {
+        return Err(
+            "--full-screen only belongs to `shot --primary` and `shot --screen <id>`".into(),
+        );
+    }
     Ok(Invocation {
         command,
         dir,
@@ -141,6 +147,8 @@ mod tests {
 
     #[test]
     fn rejects_bad_input() {
+        assert!(p(&["list", "--full-screen"]).is_err());
+        assert!(p(&["shot", "--title", "x", "--full-screen"]).is_err());
         assert!(p(&["shot"]).is_err());
         assert!(p(&["shot", "--screen", "x"]).is_err());
         assert!(p(&["delete", "-1"]).is_err());

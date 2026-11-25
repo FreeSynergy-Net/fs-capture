@@ -1,8 +1,12 @@
 //! Consent for capturing a whole screen.
 //!
-//! Pattern: Guard/Policy - a whole screen may be captured only with explicit consent. The
-//! default is `Denied`; the rule lives in the library, so every caller (CLI, GUI, script) gets it.
-//! Reason: a whole screen shows the contents of all other programs, not only the one asked for.
+//! Pattern: Capability object - only [`FullScreenConsent::require`] can hand out a [`ScreenPermit`],
+//! and `CaptureSource::capture_screen` needs one, so a whole-screen picture cannot be taken without
+//! passing the check. Deviation: the consent itself ([`FullScreenConsent`]) is a plain value object
+//! (an enum anyone can write as `Confirmed`); it records the explicit act of the person (CLI:
+//! `--full-screen`), it is not a secret. The guard stops accidents (a default, a forgotten flag),
+//! not a caller that deliberately writes `Confirmed`.
+//! Reason: a whole screen shows the contents of all programs, not only the one asked for.
 
 use crate::error::{CaptureError, ErrorCode, Result};
 
@@ -20,11 +24,23 @@ pub enum FullScreenConsent {
     Confirmed,
 }
 
+/// Proof that the consent was checked. It has a private field, so it cannot be built outside this
+/// module; `CaptureSource::capture_screen` takes it.
+///
+/// ```compile_fail
+/// // Cannot be built by hand: the field is private.
+/// let _ = fs_capture::ScreenPermit { _private: () };
+/// ```
+#[derive(Debug)]
+pub struct ScreenPermit {
+    _private: (),
+}
+
 impl FullScreenConsent {
-    /// `Ok` with consent, otherwise `E_FULL_SCREEN_NOT_CONFIRMED` saying why and how to avoid it.
-    pub fn require(self) -> Result<()> {
+    /// The permit with consent, otherwise `E_FULL_SCREEN_NOT_CONFIRMED` saying why and how to avoid it.
+    pub fn require(self) -> Result<ScreenPermit> {
         match self {
-            FullScreenConsent::Confirmed => Ok(()),
+            FullScreenConsent::Confirmed => Ok(ScreenPermit { _private: () }),
             FullScreenConsent::Denied => Err(CaptureError::new(
                 ErrorCode::FullScreenNotConfirmed,
                 "a whole screen shows the contents of all programs (your private data may be in \

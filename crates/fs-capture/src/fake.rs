@@ -1,5 +1,6 @@
 //! A source with fixed pictures: for tests and demos without a real screen.
 
+use crate::consent::ScreenPermit;
 use crate::error::{CaptureError, ErrorCode, Result};
 use crate::image::Image;
 use crate::source::{CaptureSource, ScreenId, ScreenInfo, WindowId, WindowInfo};
@@ -60,7 +61,7 @@ impl CaptureSource for FakeSource {
         Ok(self.windows.clone())
     }
 
-    fn capture_screen(&self, id: ScreenId) -> Result<Image> {
+    fn capture_screen(&self, id: ScreenId, _permit: &ScreenPermit) -> Result<Image> {
         let s = self.screen_by_id(id)?;
         Image::solid(s.width, s.height, colour(id.0, 10))
     }

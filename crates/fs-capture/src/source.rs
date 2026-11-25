@@ -1,5 +1,6 @@
 //! The picture source: what a backend has to offer.
 
+use crate::consent::ScreenPermit;
 use crate::error::{CaptureError, ErrorCode, Result};
 use crate::image::Image;
 
@@ -52,8 +53,8 @@ pub trait CaptureSource {
     fn screens(&self) -> Result<Vec<ScreenInfo>>;
     /// Lists the windows.
     fn windows(&self) -> Result<Vec<WindowInfo>>;
-    /// Captures one whole screen.
-    fn capture_screen(&self, id: ScreenId) -> Result<Image>;
+    /// Captures one whole screen. Needs a [`ScreenPermit`] (only `FullScreenConsent::require` makes one).
+    fn capture_screen(&self, id: ScreenId, permit: &ScreenPermit) -> Result<Image>;
     /// Captures one window.
     fn capture_window(&self, id: WindowId) -> Result<Image>;
 

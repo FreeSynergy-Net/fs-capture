@@ -4,7 +4,7 @@ use std::cell::Cell;
 
 use fs_capture::{
     CaptureSource, ErrorCode, FakeSource, FullScreenConsent, Image, Result, ScreenId, ScreenInfo,
-    Session, WindowId, WindowInfo,
+    ScreenPermit, Session, WindowId, WindowInfo,
 };
 
 /// Spy: forwards to a `FakeSource` and counts the calls that take a picture.
@@ -31,9 +31,9 @@ impl CaptureSource for Spy {
     fn windows(&self) -> Result<Vec<WindowInfo>> {
         self.inner.windows()
     }
-    fn capture_screen(&self, id: ScreenId) -> Result<Image> {
+    fn capture_screen(&self, id: ScreenId, permit: &ScreenPermit) -> Result<Image> {
         self.screen_shots.set(self.screen_shots.get() + 1);
-        self.inner.capture_screen(id)
+        self.inner.capture_screen(id, permit)
     }
     fn capture_window(&self, id: WindowId) -> Result<Image> {
         self.window_shots.set(self.window_shots.get() + 1);

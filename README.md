@@ -60,6 +60,14 @@ data (`tiles@1`). Open and not decided here: the program name, the frontend bind
 
 ## Privacy
 
+Residual risk: a window capture on X11 without a compositor, or of a window that covers the whole
+screen, can still contain other programs' pixels. `--window` / `--title` reduce the risk, they do not
+remove it.
+
+Protection in the library: `CaptureSource::capture_screen` needs a `ScreenPermit`, which only
+`FullScreenConsent::require` hands out (private field, not buildable outside the crate). A caller can
+still write `FullScreenConsent::Confirmed` on purpose; the guard stops accidents, not intent.
+
 No network, no telemetry. Output goes only into the folder you name.
 
 ## Licence

@@ -32,7 +32,7 @@ mod time;
 mod xcap_source;
 mod zipper;
 
-pub use consent::{FullScreenConsent, FULL_SCREEN_WARNING};
+pub use consent::{FullScreenConsent, ScreenPermit, FULL_SCREEN_WARNING};
 pub use error::{CaptureError, ErrorCode, Result};
 pub use fake::FakeSource;
 pub use image::Image;
