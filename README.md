@@ -15,14 +15,23 @@ Two crates:
 ```
 fs-capture screens                  # list screens
 fs-capture windows                  # list windows
-fs-capture shot --primary           # capture the primary screen into ./captures
-fs-capture shot --title "Notepad"   # the one window whose title contains the text
+fs-capture shot --title "Notepad"   # the one window whose title contains the text (default way)
+fs-capture shot --window 12         # one window by number
+fs-capture shot --primary --full-screen   # a WHOLE screen: only with the explicit flag
 fs-capture list
 fs-capture delete 2
 fs-capture zip photos.zip           # never overwrites an existing file
 ```
 
 Use `--dir <folder>` for another session folder.
+
+## Whole screen only on request
+
+A whole screen shows the contents of all programs, also private ones. So `shot --primary` and
+`shot --screen <id>` are refused unless you add `--full-screen`: exit code 1, `error[E_FULL_SCREEN_NOT_CONFIRMED]`,
+nothing is captured and no folder is created. With the flag a warning is printed on stderr. Windows
+(`--window`, `--title`) need no flag. The rule lives in the library (type `FullScreenConsent`, default
+`Denied`; `Session::add_screen` takes it), so every caller gets it, not only the CLI.
 
 ## The folder and the ZIP
 
@@ -39,7 +48,10 @@ under Wayland only the screen can be captured (through the GNOME Shell or portal
 route), and windows/screens are listed through X11 (XWayland); on Windows a window is captured
 by GDI `PrintWindow`.
 
-Linux build needs development packages: wayland, pipewire, libspa, xcb, dbus, clang.
+Linux build needs development packages (Debian/Ubuntu: see `.github/workflows/check.yml`). Fedora:
+`wayland-devel libxkbcommon-devel pipewire-devel libdrm-devel mesa-libgbm-devel libxcb-devel dbus-devel
+libglvnd-devel clang-devel`. Tools for listing and capturing windows on X11: `xdotool xprop xwininfo`
+(Fedora packages of the same names; not `xorg-x11-utils`).
 
 ## Manifest
 

@@ -31,6 +31,8 @@ pub enum ErrorCode {
     Zip,
     /// The capture list (`index.tsv`) is damaged.
     BadIndex,
+    /// A whole screen was requested without explicit consent (see `FullScreenConsent`).
+    FullScreenNotConfirmed,
 }
 
 impl ErrorCode {
@@ -50,6 +52,7 @@ impl ErrorCode {
             ErrorCode::Png => "E_PNG",
             ErrorCode::Zip => "E_ZIP",
             ErrorCode::BadIndex => "E_BAD_INDEX",
+            ErrorCode::FullScreenNotConfirmed => "E_FULL_SCREEN_NOT_CONFIRMED",
         }
     }
 }

@@ -2,8 +2,8 @@ use std::fs;
 use std::io::Read;
 
 use fs_capture::{
-    parse_index, CaptureSource, ErrorCode, FakeSource, FixedClock, ScreenId, Session, UtcTime,
-    WindowId, INDEX_FILE,
+    parse_index, CaptureSource, ErrorCode, FakeSource, FixedClock, FullScreenConsent, ScreenId,
+    Session, UtcTime, WindowId, INDEX_FILE,
 };
 
 fn clock() -> Box<FixedClock> {
@@ -31,7 +31,11 @@ fn add_list_remove() {
     let src = FakeSource::standard();
     let mut s = session(d.path());
     let e1 = s
-        .add_screen(&src, src.primary_screen().unwrap().id)
+        .add_screen(
+            &src,
+            src.primary_screen().unwrap().id,
+            FullScreenConsent::Confirmed,
+        )
         .unwrap();
     let e2 = s.add_window(&src, WindowId(1)).unwrap();
     assert_eq!((e1.nr, e2.nr), (1, 2));
@@ -49,7 +53,9 @@ fn add_list_remove() {
     assert_eq!(s.entries().len(), 1);
     assert_eq!(png_files(d.path()), vec![e2.file.clone()]);
     // Numbers are not reused while a later one exists.
-    let e3 = s.add_screen(&src, ScreenId(2)).unwrap();
+    let e3 = s
+        .add_screen(&src, ScreenId(2), FullScreenConsent::Confirmed)
+        .unwrap();
     assert_eq!(e3.nr, 3);
 }
 
@@ -58,7 +64,9 @@ fn png_is_valid() {
     let d = tempfile::tempdir().unwrap();
     let src = FakeSource::standard();
     let mut s = session(d.path());
-    let e = s.add_screen(&src, ScreenId(1)).unwrap();
+    let e = s
+        .add_screen(&src, ScreenId(1), FullScreenConsent::Confirmed)
+        .unwrap();
     let bytes = fs::read(d.path().join(&e.file)).unwrap();
     assert_eq!(&bytes[..8], b"\x89PNG\r\n\x1a\n");
     let dec = png::Decoder::new(std::io::Cursor::new(bytes));
@@ -87,7 +95,9 @@ fn error_cases() {
     let src = FakeSource::standard();
     let mut s = session(d.path());
     assert_eq!(
-        s.add_screen(&src, ScreenId(99)).unwrap_err().code(),
+        s.add_screen(&src, ScreenId(99), FullScreenConsent::Confirmed)
+            .unwrap_err()
+            .code(),
         ErrorCode::UnknownScreen
     );
     assert_eq!(
@@ -139,7 +149,8 @@ fn zip_has_exactly_the_session_files_with_relative_names() {
     let d = tempfile::tempdir().unwrap();
     let src = FakeSource::standard();
     let mut s = session(d.path());
-    s.add_screen(&src, ScreenId(1)).unwrap();
+    s.add_screen(&src, ScreenId(1), FullScreenConsent::Confirmed)
+        .unwrap();
     s.add_window(&src, WindowId(2)).unwrap();
     // A stray file in the folder must not be bundled.
     fs::write(d.path().join("stray.txt"), b"secret").unwrap();
@@ -175,7 +186,8 @@ fn zip_is_byte_identical_and_never_overwrites() {
     let d = tempfile::tempdir().unwrap();
     let src = FakeSource::standard();
     let mut s = session(d.path());
-    s.add_screen(&src, ScreenId(1)).unwrap();
+    s.add_screen(&src, ScreenId(1), FullScreenConsent::Confirmed)
+        .unwrap();
     s.add_window(&src, WindowId(1)).unwrap();
     let out = tempfile::tempdir().unwrap();
     let (a, b) = (out.path().join("a.zip"), out.path().join("b.zip"));
@@ -193,7 +205,9 @@ fn zip_refuses_symlinked_capture_file() {
     let d = tempfile::tempdir().unwrap();
     let src = FakeSource::standard();
     let mut s = session(d.path());
-    let e = s.add_screen(&src, ScreenId(1)).unwrap();
+    let e = s
+        .add_screen(&src, ScreenId(1), FullScreenConsent::Confirmed)
+        .unwrap();
     let secret = d.path().join("outside.txt");
     fs::write(&secret, b"secret").unwrap();
     let p = d.path().join(&e.file);
@@ -224,7 +238,7 @@ fn read_only_folder_is_an_error_and_leaves_no_entry() {
     let src = FakeSource::standard();
     let mut s = session(d.path());
     fs::set_permissions(d.path(), fs::Permissions::from_mode(0o555)).unwrap();
-    let r = s.add_screen(&src, ScreenId(1));
+    let r = s.add_screen(&src, ScreenId(1), FullScreenConsent::Confirmed);
     fs::set_permissions(d.path(), fs::Permissions::from_mode(0o755)).unwrap();
     // (As root the write would succeed; skip the check then.)
     if let Err(e) = r {
@@ -244,8 +258,12 @@ fn index_tmp_symlink_is_not_followed() {
     std::os::unix::fs::symlink(&victim, d.path().join(format!("{INDEX_FILE}.tmp"))).unwrap();
     let src = FakeSource::standard();
     let mut s = session(d.path());
-    s.add_screen(&src, src.primary_screen().unwrap().id)
-        .unwrap();
+    s.add_screen(
+        &src,
+        src.primary_screen().unwrap().id,
+        FullScreenConsent::Confirmed,
+    )
+    .unwrap();
     assert_eq!(fs::read_to_string(&victim).unwrap(), "keep");
     assert_eq!(session(d.path()).entries().len(), 1);
 }

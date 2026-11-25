@@ -8,7 +8,7 @@ name = "fs-capture"
 version = "0.0.1"
 kind = "standard"
 summary = { en = "Screenshots of screens and windows", de = "Bildschirm- und Fensteraufnahmen" }
-description = { en = "Takes screenshots of whole screens or single windows into a session folder, lists and deletes them, and bundles them as one ZIP. Windows and Linux.", de = "Macht Bildschirm- und Fensteraufnahmen in einen Sitzungsordner, listet und loescht sie und buendelt sie als ZIP. Windows und Linux." }
+description = { en = "Takes screenshots of single windows, or of whole screens only with explicit consent (--full-screen), into a session folder, lists and deletes them, and bundles them as one ZIP. Windows and Linux.", de = "Macht Fensteraufnahmen, ganze Bildschirme nur mit ausdruecklicher Zustimmung (--full-screen), in einen Sitzungsordner, listet und loescht sie und buendelt sie als ZIP. Windows und Linux." }
 license = "MIT OR Apache-2.0"
 
 # Offers (what the package provides). The capability names are the ones in the command set.

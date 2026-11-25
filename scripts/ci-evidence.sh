@@ -12,8 +12,8 @@ fi
 run() { name=$1; shift; "$BIN" "$@" > "evidence/$name.txt" 2>&1; echo "exit=$?" >> "evidence/$name.txt"; }
 run screens screens
 run windows windows
-run shot shot --primary --dir evidence/out
-[ "$(uname -s)" = Linux ] && run shot-screen shot --screen "$(head -1 evidence/screens.txt | cut -f1)" --dir evidence/out
+run shot shot --primary --full-screen --dir evidence/out
+[ "$(uname -s)" = Linux ] && run shot-screen shot --screen "$(head -1 evidence/screens.txt | cut -f1)" --full-screen --dir evidence/out
 [ "$(uname -s)" = Linux ] && run shot-window shot --window "$(grep XTerm evidence/windows.txt | head -1 | cut -f1)" --dir evidence/out
 run zip zip evidence/out.zip --dir evidence/out
 exit 0

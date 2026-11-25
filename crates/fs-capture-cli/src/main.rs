@@ -30,7 +30,8 @@ fn main() -> ExitCode {
         }
     };
     let mut out = std::io::stdout().lock();
-    let result = source().and_then(|s| run::run(&inv, s.as_ref(), &mut out));
+    let mut warn = std::io::stderr().lock();
+    let result = source().and_then(|s| run::run(&inv, s.as_ref(), &mut out, &mut warn));
     match result {
         Ok(()) => ExitCode::SUCCESS,
         Err(e) => {

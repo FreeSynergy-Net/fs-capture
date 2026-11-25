@@ -4,6 +4,7 @@ use std::fs;
 use std::io::Write;
 use std::path::{Path, PathBuf};
 
+use crate::consent::FullScreenConsent;
 use crate::error::{CaptureError, ErrorCode, Result};
 use crate::image::Image;
 use crate::index::{format_index, parse_index, Entry, Kind, INDEX_FILE};
@@ -54,8 +55,15 @@ impl Session {
         &self.entries
     }
 
-    /// Captures a screen and adds it.
-    pub fn add_screen(&mut self, source: &dyn CaptureSource, id: ScreenId) -> Result<Entry> {
+    /// Captures a whole screen and adds it. Refused with `E_FULL_SCREEN_NOT_CONFIRMED` unless
+    /// `consent` is `Confirmed`; the source is then not asked for a picture.
+    pub fn add_screen(
+        &mut self,
+        source: &dyn CaptureSource,
+        id: ScreenId,
+        consent: FullScreenConsent,
+    ) -> Result<Entry> {
+        consent.require()?;
         let info = source.screen_by_id(id)?;
         let image = source.capture_screen(id)?;
         self.add_image(Kind::Screen, &info.name, "", &image)

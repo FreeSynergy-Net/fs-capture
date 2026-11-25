@@ -2,6 +2,8 @@
 
 use std::path::PathBuf;
 
+use fs_capture::FullScreenConsent;
+
 /// What to capture.
 #[derive(Debug, PartialEq, Eq)]
 pub enum Target {
@@ -39,6 +41,8 @@ pub enum Command {
 pub struct Invocation {
     /// The command.
     pub command: Command,
+    /// Explicit consent for whole-screen captures (`--full-screen`); default denied.
+    pub full_screen: FullScreenConsent,
     /// Session folder (`--dir`, default `captures`).
     pub dir: PathBuf,
 }
@@ -50,8 +54,8 @@ fs-capture - screenshots of screens and windows, collected in a folder, bundled 
 USAGE:
   fs-capture screens                      list screens
   fs-capture windows                      list windows
-  fs-capture shot --primary               capture the primary screen
-  fs-capture shot --screen <id>           capture one screen
+  fs-capture shot --primary --full-screen capture the whole primary screen (needs --full-screen)
+  fs-capture shot --screen <id> --full-screen   capture one whole screen (needs --full-screen)
   fs-capture shot --window <id>           capture one window
   fs-capture shot --title <text>          capture the one window whose title contains <text>
   fs-capture list                         list the captures in the folder
@@ -60,6 +64,9 @@ USAGE:
 
 OPTIONS:
   --dir <folder>   session folder (default: ./captures)
+  --full-screen    confirm that a whole screen may be captured; without it `shot --primary` and
+                   `shot --screen` are refused (E_FULL_SCREEN_NOT_CONFIRMED). Everything of all programs
+                   on that screen can be in the picture. Windows (`--window`, `--title`) need no flag.
   -h, --help       show this help
 
 Errors are printed as `error[E_CODE]: message` on stderr; exit code 1 (2 = wrong usage).
@@ -69,12 +76,14 @@ Errors are printed as `error[E_CODE]: message` on stderr; exit code 1 (2 = wrong
 pub fn parse(args: &[String]) -> Result<Invocation, String> {
     let mut dir = PathBuf::from("captures");
     let mut rest: Vec<&str> = Vec::new();
+    let mut full_screen = FullScreenConsent::Denied;
     let mut it = args.iter();
     while let Some(a) = it.next() {
         match a.as_str() {
             "--dir" => {
                 dir = PathBuf::from(it.next().ok_or("--dir needs a folder")?);
             }
+            "--full-screen" => full_screen = FullScreenConsent::Confirmed,
             "-h" | "--help" => rest.insert(0, "--help"),
             other => rest.push(other),
         }
@@ -92,7 +101,11 @@ pub fn parse(args: &[String]) -> Result<Invocation, String> {
         ["zip", file] => Command::Zip(PathBuf::from(file)),
         _ => return Err(format!("unknown or incomplete command: {}", rest.join(" "))),
     };
-    Ok(Invocation { command, dir })
+    Ok(Invocation {
+        command,
+        dir,
+        full_screen,
+    })
 }
 
 fn num(s: &str) -> Result<u64, String> {
@@ -115,6 +128,15 @@ mod tests {
         assert_eq!(p(&[]).unwrap().command, Command::Help);
         assert_eq!(p(&["delete", "2"]).unwrap().command, Command::Delete(2));
         assert_eq!(p(&["--dir", "d", "list"]).unwrap().dir, PathBuf::from("d"));
+    }
+
+    #[test]
+    fn full_screen_flag_is_off_by_default() {
+        let i = p(&["shot", "--primary"]).unwrap();
+        assert_eq!(i.full_screen, FullScreenConsent::Denied);
+        let i = p(&["shot", "--full-screen", "--primary"]).unwrap();
+        assert_eq!(i.command, Command::Shot(Target::Primary));
+        assert_eq!(i.full_screen, FullScreenConsent::Confirmed);
     }
 
     #[test]

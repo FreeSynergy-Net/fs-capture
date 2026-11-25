@@ -22,8 +22,8 @@
       "id": "capture.shot", "call": "fs-capture shot", "capability": "capture.shot",
       "access": "write",
       "help": { "topic": "capture-shot", "text": {
-        "en": "Takes a screenshot of the primary screen, a screen, a window or the one window with a title, into the session folder.",
-        "de": "Macht einen Screenshot vom Hauptbildschirm, einem Bildschirm, einem Fenster oder dem einen Fenster mit einem Titel in den Sitzungsordner." } }
+        "en": "Takes a screenshot of a window or the one window with a title (default), or of a whole screen only with the explicit flag --full-screen (otherwise E_FULL_SCREEN_NOT_CONFIRMED), into the session folder.",
+        "de": "Macht einen Screenshot von einem Fenster oder dem einen Fenster mit einem Titel (Standard) oder nur mit dem ausdruecklichen Flag --full-screen vom ganzen Bildschirm (sonst E_FULL_SCREEN_NOT_CONFIRMED) in den Sitzungsordner." } }
     },
     {
       "id": "capture.list", "call": "fs-capture list", "capability": "capture.list",

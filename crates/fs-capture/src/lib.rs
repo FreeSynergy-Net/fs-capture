@@ -6,18 +6,19 @@
 //! delivers fixed pictures for tests. No type of the backend appears in this API.
 //!
 //! ```
-//! use fs_capture::{FakeSource, CaptureSource, Session};
+//! use fs_capture::{FakeSource, CaptureSource, FullScreenConsent, Session};
 //! # let dir = std::env::temp_dir().join(format!("fs-capture-doc-{}", std::process::id()));
 //! let source = FakeSource::standard();
 //! let mut session = Session::open(&dir).unwrap();
 //! let primary = source.primary_screen().unwrap();
-//! let entry = session.add_screen(&source, primary.id).unwrap();
+//! let entry = session.add_screen(&source, primary.id, FullScreenConsent::Confirmed).unwrap();
 //! assert_eq!(entry.nr, 1);
 //! # std::fs::remove_dir_all(&dir).unwrap();
 //! ```
 
 #![forbid(unsafe_code)]
 
+mod consent;
 mod error;
 mod fake;
 mod image;
@@ -31,6 +32,7 @@ mod time;
 mod xcap_source;
 mod zipper;
 
+pub use consent::{FullScreenConsent, FULL_SCREEN_WARNING};
 pub use error::{CaptureError, ErrorCode, Result};
 pub use fake::FakeSource;
 pub use image::Image;
